@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Восток 24 — ресторан восточной кухни</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== ТУЛБАР ===================== -->
+<header class="toolbar" id="toolbar">
+  <nav class="toolbar__nav">
+    <a href="#about" class="toolbar__link">О нас</a>
+    <a href="#menu" class="toolbar__link">Меню</a>
+    <a href="#bar" class="toolbar__link">Барная карта</a>
+    <a href="#breakfast" class="toolbar__link">Завтраки</a>
+    <a href="#gallery" class="toolbar__link">Галерея</a>
+    <a href="#contacts" class="toolbar__link">Контакты</a>
+  </nav>
+</header>
+
+<!-- ===================== НУЛЕВАЯ СТРАНИЦА (HERO) ===================== -->
+<section class="hero" id="hero">
+  <div class="hero__image-wrap">
+    <img src="data/hero-photo.jpg" alt="Интерьер ресторана Восток 24" class="hero__image">
+  </div>
+  <div class="hero__text-wrap">
+    <h1 class="hero__title">
+      <span class="hero__title-line">Ресторан</span>
+      <span class="hero__title-line">восточной</span>
+      <span class="hero__title-line">кухни</span>
+    </h1>
+    <p class="hero__brand">Восток 24</p>
+  </div>
+  <a href="#about" class="hero__scroll-arrow" aria-label="Прокрутить вниз">
+    <svg viewBox="0 0 24 24" width="32" height="32">
+      <path d="M12 4 L12 20 M5 13 L12 20 L19 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+</section>
+
+<!-- ===================== О НАШЕМ РЕСТОРАНЕ ===================== -->
+<section class="about" id="about">
+  <h2 class="section-title">О нашем ресторане</h2>
+
+  <div class="about__steps">
+    <p class="about__item about__item--1">Мы находимся по адресу Тверь, набережная реки Тьмаки, дом 7</p>
+    <p class="about__item about__item--2">Наш ресторан работает круглосуточно! Ждем вас в любое время суток!</p>
+    <p class="about__item about__item--3">Забронировать столик или задать интересующие вас вопросы вы всегда можете по номеру — +7 (919) 069-24-24</p>
+    <p class="about__item about__item--4">В нашем ресторане работает доставка с 11:00 до 00:00. Минимальная сумма заказ доставки 1500 ₽. Телефон доставки — +7 (910) 069-24-24</p>
+  </div>
+
+  <blockquote class="about__quote">
+    «Восток 24» — это место, где вкус становится событием, а каждый визит превращается в опыт, к которому хочется вернуться.
+  </blockquote>
+</section>
+
+<!-- ===================== НАШЕ МЕНЮ ===================== -->
+<section class="menu-section" id="menu">
+  <h2 class="section-title">Наше меню</h2>
+  <p class="section-subtitle">Перед вами реальные фотографии избранных блюд нашего меню!</p>
+
+  <div class="dish-grid" id="menuGrid">
+    <!-- ряд 1: всегда видимые -->
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/menu-dish-1.jpg" alt="Блюдо 1" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо 1</p>
+    </div>
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/menu-dish-2.jpg" alt="Блюдо 2" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо 2</p>
+    </div>
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/menu-dish-3.jpg" alt="Блюдо 3" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо 3</p>
+    </div>
+
+    <!-- ряд 2: скрытый, появляется по "еще" -->
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/menu-dish-4.jpg" alt="Блюдо 4" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо 4</p>
+    </div>
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/menu-dish-5.jpg" alt="Блюдо 5" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо 5</p>
+    </div>
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/menu-dish-6.jpg" alt="Блюдо 6" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо 6</p>
+    </div>
+  </div>
+
+  <button class="toggle-more" id="menuToggle" data-target="menuGrid" data-max-groups="1">еще</button>
+</section>
+
+<!-- ===================== БАРНАЯ КАРТА ===================== -->
+<section class="menu-section" id="bar">
+  <h2 class="section-title">Барная карта</h2>
+  <p class="section-subtitle">В вашем распоряжении вкуснейшие алкогольные и безалкогольные напитки!</p>
+
+  <div class="dish-grid" id="barGrid">
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/bar-drink-1.jpg" alt="Напиток 1" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Напиток 1</p>
+    </div>
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/bar-drink-2.jpg" alt="Напиток 2" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Напиток 2</p>
+    </div>
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/bar-drink-3.jpg" alt="Напиток 3" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Напиток 3</p>
+    </div>
+
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/bar-drink-4.jpg" alt="Напиток 4" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Напиток 4</p>
+    </div>
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/bar-drink-5.jpg" alt="Напиток 5" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Напиток 5</p>
+    </div>
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/bar-drink-6.jpg" alt="Напиток 6" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Напиток 6</p>
+    </div>
+  </div>
+
+  <button class="toggle-more" id="barToggle" data-target="barGrid" data-max-groups="1">еще</button>
+</section>
+
+<!-- ===================== ЗАВТРАКИ ===================== -->
+<section class="menu-section" id="breakfast">
+  <h2 class="section-title">Завтраки</h2>
+  <p class="section-subtitle">Мы подготовили для вас специальное утреннее меню, которое действует с 8:00 по 12:00!</p>
+
+  <div class="dish-grid" id="breakfastGrid">
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/breakfast-dish-1.jpg" alt="Блюдо завтрак 1" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо завтрак 1</p>
+    </div>
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/breakfast-dish-2.jpg" alt="Блюдо завтрак 2" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо завтрак 2</p>
+    </div>
+    <div class="dish-card">
+      <div class="dish-card__photo-wrap">
+        <img src="data/breakfast-dish-3.jpg" alt="Блюдо завтрак 3" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо завтрак 3</p>
+    </div>
+
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/breakfast-dish-4.jpg" alt="Блюдо завтрак 4" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо завтрак 4</p>
+    </div>
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/breakfast-dish-5.jpg" alt="Блюдо завтрак 5" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо завтрак 5</p>
+    </div>
+    <div class="dish-card dish-card--hidden" data-reveal-group="1">
+      <div class="dish-card__photo-wrap">
+        <img src="data/breakfast-dish-6.jpg" alt="Блюдо завтрак 6" class="dish-card__photo">
+      </div>
+      <p class="dish-card__name">Блюдо завтрак 6</p>
+    </div>
+  </div>
+
+  <button class="toggle-more" id="breakfastToggle" data-target="breakfastGrid" data-max-groups="1">еще</button>
+
+  <p class="full-menu-hint">Вы можете посмотреть полный список блюд нажав на соответствующую кнопку ниже!</p>
+
+  <div class="full-menu-buttons">
+    <a href="menus.html?tab=main" class="full-menu-btn">Основное меню</a>
+    <a href="menus.html?tab=bar" class="full-menu-btn">Барная карта</a>
+    <a href="menus.html?tab=breakfast" class="full-menu-btn">Завтраки</a>
+  </div>
+</section>
+
+<!-- ===================== ГАЛЕРЕЯ ===================== -->
+<section class="gallery" id="gallery">
+  <h2 class="section-title">Галерея</h2>
+  <p class="section-subtitle">Насладитесь атмосферой Востока в нашем ресторане!</p>
+
+  <div class="gallery-grid" id="galleryGrid">
+    <img src="data/gallery-photo-1.jpg" alt="Фото из ресторана 1" class="gallery-photo">
+    <img src="data/gallery-photo-2.jpg" alt="Фото из ресторана 2" class="gallery-photo">
+    <img src="data/gallery-photo-3.jpg" alt="Фото из ресторана 3" class="gallery-photo">
+
+    <img src="data/gallery-photo-4.jpg" alt="Фото из ресторана 4" class="gallery-photo gallery-photo--large gallery-photo--hidden" data-reveal-group="1">
+    <img src="data/gallery-photo-5.jpg" alt="Фото из ресторана 5" class="gallery-photo gallery-photo--hidden" data-reveal-group="1">
+    <img src="data/gallery-photo-6.jpg" alt="Фото из ресторана 6" class="gallery-photo gallery-photo--hidden" data-reveal-group="1">
+    <img src="data/gallery-photo-7.jpg" alt="Фото из ресторана 7" class="gallery-photo gallery-photo--large gallery-photo--hidden" data-reveal-group="1">
+  </div>
+
+  <button class="toggle-more" id="galleryToggle" data-target="galleryGrid" data-max-groups="1">еще</button>
+</section>
+
+<!-- ===================== КОНТАКТЫ ===================== -->
+<section class="contacts" id="contacts">
+  <h2 class="section-title">Контакты</h2>
+  <p class="section-subtitle">Ниже находится вся нужная информация для связи с нами!</p>
+
+  <div class="contacts__info">
+    <p class="contacts__item">Адрес: Тверь, набережная реки Тьмаки, 7</p>
+    <p class="contacts__item">График работы: круглосуточно</p>
+    <p class="contacts__item">Телефон для бронирования: +7 (919) 069-24-24</p>
+    <p class="contacts__item">Телефон доставки: +7 (910) 069-24-24</p>
+  </div>
+
+  <div class="contacts__buttons">
+    <a href="tel:+79190692424" class="contacts__btn">Позвонить (бронь)</a>
+    <a href="https://vk.com/" class="contacts__btn" target="_blank" rel="noopener">Наша группа ВК</a>
+  </div>
+</section>
+
+<!-- ===================== ФУТЕР ===================== -->
+<footer class="footer">
+  <div class="footer__awards-placeholder">
+    <!-- место для будущих наград: Яндекс Карты, 2ГИС, RestaurantGuru -->
+  </div>
+
+  <div class="footer__map">
+    <iframe
+      src="https://yandex.ru/map-widget/v1/?ll=35.897772%2C56.855083&z=15.14,pm2rdm&text=%D0%92%D0%BE%D1%81%D1%82%D0%BE%D0%BA%24"
+      width="100%"
+      height="400"
+      frameborder="0"
+      loading="lazy"
+      title="Карта расположения ресторана Восток 24">
+    </iframe>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
