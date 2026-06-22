@@ -1,136 +1,287 @@
-document.addEventListener('DOMContentLoaded', () => {
-  initToggleMore();
-  initToolbarHighlight();
-  initSmoothAnchors();
-  initHeroAnimation();
+/* ============================================================
+   ВОСТОК 24 — script.js
+   ============================================================ */
+
+const navbar       = document.getElementById('navbar');
+const heroEl       = document.getElementById('hero');
+const heroArrow    = document.getElementById('heroArrow');
+const backToTop    = document.getElementById('backToTop');
+const parallaxImg  = document.getElementById('heroParallaxImg');
+const aboutSection = document.getElementById('about');
+
+/* ── Navbar: появляется когда уходим с hero ── */
+function updateNavbar() {
+  const heroBottom = heroEl ? heroEl.getBoundingClientRect().bottom : 0;
+  navbar.classList.toggle('visible', heroBottom < 60);
+}
+
+/* ── Hero: затемнение при скролле + параллакс ── */
+function updateHeroScroll() {
+  const scrollY  = window.scrollY;
+  const heroH    = heroEl ? heroEl.offsetHeight : window.innerHeight;
+  const progress = Math.min(scrollY / heroH, 1);
+
+  heroEl.classList.remove('scrolled-10','scrolled-25','scrolled-50','scrolled-75');
+  if      (progress >= 0.75) heroEl.classList.add('scrolled-75');
+  else if (progress >= 0.50) heroEl.classList.add('scrolled-50');
+  else if (progress >= 0.25) heroEl.classList.add('scrolled-25');
+  else if (progress >= 0.10) heroEl.classList.add('scrolled-10');
+
+  if (parallaxImg) {
+    parallaxImg.style.transform = `scale(1) translateY(${scrollY * 0.28}px)`;
+  }
+
+  backToTop.classList.toggle('visible', scrollY > heroH * 0.6);
+}
+
+window.addEventListener('scroll', () => {
+  updateNavbar();
+  updateHeroScroll();
+}, { passive: true });
+
+updateNavbar();
+updateHeroScroll();
+
+/* ── Стрелка на герое ── */
+if (heroArrow) {
+  heroArrow.addEventListener('click', () => {
+    aboutSection.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+/* ── Лого → наверх ── */
+const navLogo = document.getElementById('navLogo');
+if (navLogo) {
+  navLogo.addEventListener('click', e => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+/* ── Кнопка Наверх ── */
+if (backToTop) {
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+/* ── Активный пункт навбара ── */
+const sectionIds = ['about','menu','bar','breakfast','gallery','contacts'];
+const navLinks   = document.querySelectorAll('.navbar__links a[data-section]');
+
+const sectionObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navLinks.forEach(a => a.classList.toggle('active', a.dataset.section === id));
+    }
+  });
+}, { threshold: 0.25, rootMargin: '-10% 0px -60% 0px' });
+
+sectionIds.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) sectionObserver.observe(el);
 });
 
-/* ===================== ЕЩЕ / СКРЫТЬ ===================== */
-/*
-  Каждая кнопка .toggle-more имеет:
-  - data-target: id грида, в котором лежат карточки
-  - data-max-groups: сколько раз можно нажать "еще" (групп для раскрытия)
-  Карточки, которые показываются по "еще", помечены классом
-  *--hidden и атрибутом data-reveal-group="N" (номер группы, в каком порядке открывать).
-  Состояние (открыто/закрыто) сохраняется в sessionStorage по ключу target-id,
-  чтобы при возврате на страницу/переходе по якорю не сбрасывалось.
-*/
-function initToggleMore() {
-  const buttons = document.querySelectorAll('.toggle-more');
-
-  buttons.forEach((button) => {
-    const targetId = button.dataset.target;
-    const grid = document.getElementById(targetId);
-    if (!grid) return;
-
-    const maxGroups = parseInt(button.dataset.maxGroups, 10) || 0;
-    if (maxGroups === 0) {
-      // в этой секции нет скрытых карточек — кнопка не нужна
-      button.style.display = 'none';
-      return;
+/* ── Плавный скролл по ссылкам навбара ── */
+navLinks.forEach(link => {
+  link.addEventListener('click', e => {
+    const href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
     }
+  });
+});
 
-    const storageKey = `toggle-state:${targetId}`;
-    const savedState = sessionStorage.getItem(storageKey);
-    let openedGroups = savedState ? parseInt(savedState, 10) : 0;
+/* ── Reveal: заголовки и slide-in ── */
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
 
-    // применяем сохранённое состояние без анимации при загрузке
-    applyGroupsState(grid, openedGroups, false);
-    updateButtonLabel(button, openedGroups, maxGroups);
+document.querySelectorAll('.reveal-title, .slide-in').forEach(el => {
+  revealObserver.observe(el);
+});
 
-    button.addEventListener('click', () => {
-      if (openedGroups < maxGroups) {
-        openedGroups += 1;
-      } else {
-        openedGroups = 0;
-      }
-      applyGroupsState(grid, openedGroups, true);
-      updateButtonLabel(button, openedGroups, maxGroups);
-      sessionStorage.setItem(storageKey, String(openedGroups));
+/* ── Reveal: карточки с задержкой из CSS-переменной ── */
+const cardObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      cardObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.card-reveal').forEach(el => cardObserver.observe(el));
+
+/* ── СЛАЙДЕР в разделе "О нас" ── */
+const slides    = document.querySelectorAll('.slider__slide');
+const dots      = document.querySelectorAll('.slider__dot');
+const sliderPrev = document.getElementById('sliderPrev');
+const sliderNext = document.getElementById('sliderNext');
+let currentSlide = 0;
+let sliderTimer  = null;
+
+function goToSlide(idx) {
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  currentSlide = (idx + slides.length) % slides.length;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+}
+
+function startAutoSlide() {
+  sliderTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
+}
+
+function resetAutoSlide() {
+  clearInterval(sliderTimer);
+  startAutoSlide();
+}
+
+if (slides.length > 0) {
+  startAutoSlide();
+
+  if (sliderPrev) sliderPrev.addEventListener('click', () => { goToSlide(currentSlide - 1); resetAutoSlide(); });
+  if (sliderNext) sliderNext.addEventListener('click', () => { goToSlide(currentSlide + 1); resetAutoSlide(); });
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      goToSlide(parseInt(dot.dataset.idx));
+      resetAutoSlide();
     });
   });
 }
 
-function applyGroupsState(grid, openedGroups, animate) {
-  const hiddenItems = grid.querySelectorAll('[data-reveal-group]');
+/* ── МЕНЮ: Ещё / Скрыть (3 ряда) ── */
+const menuRow2 = document.getElementById('menuRow2');
+const menuRow3 = document.getElementById('menuRow3');
+const menuMore = document.getElementById('menuMore');
+const menuHide = document.getElementById('menuHide');
+let menuStage  = 0;
 
-  hiddenItems.forEach((item) => {
-    const itemGroup = parseInt(item.dataset.revealGroup, 10);
-    const shouldShow = itemGroup <= openedGroups;
+function showRow(row) {
+  row.classList.remove('food-row--hidden');
+  row.classList.add('food-row--entering');
+  row.querySelectorAll('.card-reveal').forEach(c => cardObserver.observe(c));
+}
 
-    if (shouldShow) {
-      item.classList.remove('dish-card--hidden', 'gallery-photo--hidden');
-      if (animate) {
-        item.classList.add('reveal-animate');
-        // сбрасываем класс анимации после её завершения, чтобы можно было повторить
-        item.addEventListener('animationend', () => {
-          item.classList.remove('reveal-animate');
-        }, { once: true });
-      }
+function hideRow(row) {
+  row.classList.add('food-row--hidden');
+  row.classList.remove('food-row--entering');
+  row.querySelectorAll('.card-reveal').forEach(c => c.classList.remove('visible'));
+}
+
+if (menuMore) {
+  menuMore.addEventListener('click', () => {
+    if (menuStage === 0) {
+      showRow(menuRow2);
+      menuStage = 1;
+      menuHide.style.display = 'inline-flex';
+    } else if (menuStage === 1) {
+      showRow(menuRow3);
+      menuStage = 2;
+      menuMore.style.display = 'none';
+    }
+  });
+}
+
+if (menuHide) {
+  menuHide.addEventListener('click', () => {
+    hideRow(menuRow2);
+    hideRow(menuRow3);
+    menuStage = 0;
+    menuMore.style.display = 'inline-flex';
+    menuHide.style.display = 'none';
+  });
+}
+
+/* ── БАР и ЗАВТРАКИ ── */
+setupToggle('barRow2',   'barBtn');
+setupToggle('breakRow2', 'breakBtn');
+
+function setupToggle(rowId, btnId) {
+  const row = document.getElementById(rowId);
+  const btn = document.getElementById(btnId);
+  if (!row || !btn) return;
+  let open = false;
+  btn.addEventListener('click', () => {
+    if (!open) {
+      row.classList.remove('food-row--hidden');
+      row.classList.add('food-row--entering');
+      row.querySelectorAll('.card-reveal').forEach(c => cardObserver.observe(c));
+      btn.textContent = 'Скрыть';
+      open = true;
     } else {
-      item.classList.remove('reveal-animate');
-      // возвращаем правильный класс скрытия в зависимости от типа элемента
-      if (item.classList.contains('gallery-photo')) {
-        item.classList.add('gallery-photo--hidden');
-      } else {
-        item.classList.add('dish-card--hidden');
-      }
+      row.classList.add('food-row--hidden');
+      row.classList.remove('food-row--entering');
+      row.querySelectorAll('.card-reveal').forEach(c => c.classList.remove('visible'));
+      btn.textContent = 'Ещё';
+      open = false;
     }
   });
 }
 
-function updateButtonLabel(button, openedGroups, maxGroups) {
-  button.textContent = openedGroups >= maxGroups ? 'скрыть' : 'еще';
-}
+/* ── ГАЛЕРЕЯ ── */
+const galRow2 = document.getElementById('galRow2');
+const galBtn  = document.getElementById('galBtn');
+let galOpen   = false;
 
-/* ===================== ПОДСВЕТКА АКТИВНОГО РАЗДЕЛА В ТУЛБАРЕ ===================== */
-function initToolbarHighlight() {
-  const links = document.querySelectorAll('.toolbar__link');
-  if (!links.length) return;
-
-  const sections = Array.from(links)
-    .map((link) => document.querySelector(link.getAttribute('href')))
-    .filter(Boolean);
-
-  if (!sections.length) return;
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const id = entry.target.id;
-        links.forEach((link) => {
-          link.classList.toggle('toolbar__link--active', link.getAttribute('href') === `#${id}`);
-        });
-      }
-    });
-  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
-
-  sections.forEach((section) => observer.observe(section));
-}
-
-/* ===================== ПЛАВНЫЙ СКРОЛЛ ПО ЯКОРЯМ ===================== */
-function initSmoothAnchors() {
-  const anchorLinks = document.querySelectorAll('a[href^="#"]');
-
-  anchorLinks.forEach((link) => {
-    link.addEventListener('click', (event) => {
-      const targetId = link.getAttribute('href').slice(1);
-      const target = document.getElementById(targetId);
-      if (!target) return;
-
-      event.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+if (galBtn) {
+  galBtn.addEventListener('click', () => {
+    if (!galOpen) {
+      galRow2.classList.remove('gallery-row--hidden');
+      galRow2.classList.add('gallery-row--entering');
+      galBtn.textContent = 'Скрыть';
+      galOpen = true;
+    } else {
+      galRow2.classList.add('gallery-row--hidden');
+      galRow2.classList.remove('gallery-row--entering');
+      galBtn.textContent = 'Ещё';
+      galOpen = false;
+    }
   });
 }
 
-/* ===================== АНИМАЦИЯ HERO ПРИ ЗАГРУЗКЕ ===================== */
-function initHeroAnimation() {
-  const hero = document.getElementById('hero');
-  if (!hero) return;
+/* ── LIGHTBOX ── */
+const lightbox         = document.getElementById('lightbox');
+const lightboxImg      = document.getElementById('lightboxImg');
+const lightboxClose    = document.getElementById('lightboxClose');
+const lightboxBackdrop = document.getElementById('lightboxBackdrop');
 
-  // небольшая задержка, чтобы анимация точно сыграла после рендера
-  requestAnimationFrame(() => {
-    hero.classList.add('hero--animated');
-  });
+function openLightbox(src) {
+  lightboxImg.src = src;
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(() => { lightboxImg.src = ''; }, 300);
+}
+
+document.querySelectorAll('.food-card').forEach(card => {
+  card.addEventListener('click', () => { if (card.dataset.zoom) openLightbox(card.dataset.zoom); });
+});
+document.querySelectorAll('.gallery-item').forEach(item => {
+  item.addEventListener('click', () => { if (item.dataset.zoom) openLightbox(item.dataset.zoom); });
+});
+
+lightboxClose.addEventListener('click', closeLightbox);
+lightboxBackdrop.addEventListener('click', closeLightbox);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+/* ── Placeholder при ошибке загрузки фото ── */
+document.querySelectorAll('.food-card__img-wrap img').forEach(img => {
+  img.addEventListener('error', () => {
+    img.style.display = 'none';
+    img.parentElement.classList.add('no-img');
+  });
+});
