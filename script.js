@@ -124,8 +124,7 @@ document.querySelectorAll('.card-reveal').forEach(el => cardObserver.observe(el)
 /* ── СЛАЙДЕР в разделе "О нас" ── */
 const slides    = document.querySelectorAll('.slider__slide');
 const dots      = document.querySelectorAll('.slider__dot');
-const sliderPrev = document.getElementById('sliderPrev');
-const sliderNext = document.getElementById('sliderNext');
+const slider    = document.getElementById('aboutSlider');
 let currentSlide = 0;
 let sliderTimer  = null;
 
@@ -146,11 +145,31 @@ function resetAutoSlide() {
   startAutoSlide();
 }
 
+/* Drag / swipe — перелистывание зажатием ЛКМ или пальцем */
+{
+  let startX = 0, dragging = false;
+
+  slider.addEventListener('pointerdown', e => {
+    startX = e.clientX;
+    dragging = true;
+    slider.setPointerCapture(e.pointerId);
+  });
+
+  slider.addEventListener('pointerup', e => {
+    if (!dragging) return;
+    dragging = false;
+    const diff = startX - e.clientX;
+    if (Math.abs(diff) > 40) {
+      diff > 0 ? goToSlide(currentSlide + 1) : goToSlide(currentSlide - 1);
+      resetAutoSlide();
+    }
+  });
+
+  slider.addEventListener('pointercancel', () => { dragging = false; });
+}
+
 if (slides.length > 0) {
   startAutoSlide();
-
-  if (sliderPrev) sliderPrev.addEventListener('click', () => { goToSlide(currentSlide - 1); resetAutoSlide(); });
-  if (sliderNext) sliderNext.addEventListener('click', () => { goToSlide(currentSlide + 1); resetAutoSlide(); });
 
   dots.forEach(dot => {
     dot.addEventListener('click', () => {
@@ -168,15 +187,29 @@ const menuHide = document.getElementById('menuHide');
 let menuStage  = 0;
 
 function showRow(row) {
-  row.classList.remove('food-row--hidden');
+  row.classList.remove('food-row--hidden', 'food-row--leaving');
   row.classList.add('food-row--entering');
   row.querySelectorAll('.card-reveal').forEach(c => cardObserver.observe(c));
 }
 
 function hideRow(row) {
-  row.classList.add('food-row--hidden');
+  /* плавное исчезновение, затем скрытие из потока */
   row.classList.remove('food-row--entering');
-  row.querySelectorAll('.card-reveal').forEach(c => c.classList.remove('visible'));
+  row.classList.add('food-row--leaving');
+  setTimeout(() => {
+    row.classList.add('food-row--hidden');
+    row.classList.remove('food-row--leaving');
+    row.querySelectorAll('.card-reveal').forEach(c => c.classList.remove('visible'));
+  }, 600);
+}
+
+/* Прокрутить страницу так, чтобы переданный элемент оказался по центру viewport */
+function scrollToCenter(el) {
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY
+            - window.innerHeight / 2
+            + el.offsetHeight / 2;
+  window.scrollTo({ top, behavior: 'smooth' });
 }
 
 if (menuMore) {
@@ -200,53 +233,77 @@ if (menuHide) {
     menuStage = 0;
     menuMore.style.display = 'inline-flex';
     menuHide.style.display = 'none';
+    /* прокрутка к первому ряду по центру — после fade-out */
+    setTimeout(() => scrollToCenter(document.getElementById('menuRow1')), 600);
   });
 }
 
 /* ── БАР и ЗАВТРАКИ ── */
-setupToggle('barRow2',   'barBtn');
-setupToggle('breakRow2', 'breakBtn');
+setupToggle('barRow2',   'barBtn',   'barRow1');
+setupToggle('breakRow2', 'breakBtn', 'breakRow1');
 
-function setupToggle(rowId, btnId) {
+function setupToggle(rowId, btnId, firstRowId) {
   const row = document.getElementById(rowId);
   const btn = document.getElementById(btnId);
   if (!row || !btn) return;
   let open = false;
   btn.addEventListener('click', () => {
     if (!open) {
-      row.classList.remove('food-row--hidden');
-      row.classList.add('food-row--entering');
-      row.querySelectorAll('.card-reveal').forEach(c => cardObserver.observe(c));
+      showRow(row);
       btn.textContent = 'Скрыть';
       open = true;
     } else {
-      row.classList.add('food-row--hidden');
-      row.classList.remove('food-row--entering');
-      row.querySelectorAll('.card-reveal').forEach(c => c.classList.remove('visible'));
+      hideRow(row);
       btn.textContent = 'Ещё';
       open = false;
+      setTimeout(() => scrollToCenter(document.getElementById(firstRowId)), 600);
     }
   });
 }
 
 /* ── ГАЛЕРЕЯ ── */
-const galRow2 = document.getElementById('galRow2');
+const galRows = [document.getElementById('galRow2'), document.getElementById('galRow3')];
 const galBtn  = document.getElementById('galBtn');
-let galOpen   = false;
+const galHide = document.getElementById('galHide');
+let galStep   = 0; /* 0 — только первый ряд, 1 — +второй, 2 — +третий */
+
+function galRefresh() {
+  /* «Скрыть» видна, когда раскрыт хотя бы один дополнительный ряд */
+  if (galStep > 0) galHide.classList.remove('toggle-btn--hide');
+  else             galHide.classList.add('toggle-btn--hide');
+  /* «Ещё» прячется, когда все ряды раскрыты */
+  if (galStep >= galRows.length) galBtn.classList.add('toggle-btn--hide');
+  else                           galBtn.classList.remove('toggle-btn--hide');
+}
 
 if (galBtn) {
   galBtn.addEventListener('click', () => {
-    if (!galOpen) {
-      galRow2.classList.remove('gallery-row--hidden');
-      galRow2.classList.add('gallery-row--entering');
-      galBtn.textContent = 'Скрыть';
-      galOpen = true;
-    } else {
-      galRow2.classList.add('gallery-row--hidden');
-      galRow2.classList.remove('gallery-row--entering');
-      galBtn.textContent = 'Ещё';
-      galOpen = false;
+    if (galStep < galRows.length) {
+      const row = galRows[galStep];
+      row.classList.remove('gallery-row--hidden', 'gallery-row--leaving');
+      row.classList.add('gallery-row--entering');
+      galStep++;
+      galRefresh();
     }
+  });
+}
+
+if (galHide) {
+  galHide.addEventListener('click', () => {
+    /* плавное исчезновение, затем скрытие из потока */
+    galRows.forEach(row => {
+      row.classList.remove('gallery-row--entering');
+      row.classList.add('gallery-row--leaving');
+    });
+    setTimeout(() => {
+      galRows.forEach(row => {
+        row.classList.add('gallery-row--hidden');
+        row.classList.remove('gallery-row--leaving');
+      });
+      galStep = 0;
+      galRefresh();
+      scrollToCenter(document.getElementById('galRow1'));
+    }, 300);
   });
 }
 
