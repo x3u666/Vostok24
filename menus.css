@@ -13,7 +13,7 @@
 }
 
 .menus-wrap {
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 64px 48px 96px;
 }
@@ -83,46 +83,119 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Grid ── */
-.menus-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+/* ── Spread list ── */
+.menu-spreads {
+  max-width: 1540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
-.menu-item {
+/* Title / closing pages — shown as a standalone framed card, not paired */
+.menu-cover {
   background: var(--surface);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
   border: 1px solid var(--border);
-  cursor: pointer;
-  transition: transform var(--transition), box-shadow var(--transition);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  justify-content: center;
+  cursor: zoom-in;
+  transition: box-shadow var(--transition), transform var(--transition);
 }
 
-.menu-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(46,33,24,0.1);
+.menu-cover:hover {
+  box-shadow: 0 14px 34px rgba(46,33,24,0.12);
+  transform: translateY(-3px);
 }
 
-.menu-item__img {
-  aspect-ratio: 4/3;
-  background: var(--bg-alt);
-  overflow: hidden;
+.menu-cover img {
+  max-width: 35%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
   position: relative;
 }
 
-.menu-item__img img {
+/* Two photographed halves joined into one spread, like an open book */
+.menu-spread {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  box-shadow: 0 4px 14px rgba(46,33,24,0.06);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.menu-spread:hover {
+  box-shadow: 0 14px 34px rgba(46,33,24,0.12);
+  transform: translateY(-3px);
+}
+
+.menu-spread__half {
+  flex: 1 1 50%;
+  aspect-ratio: 3 / 4;
+  background: var(--bg-alt);
+  position: relative;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.menu-spread__half:first-child {
+  border-right: 1px solid var(--border-dark);
+}
+
+.menu-spread__half img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  display: block;
 }
 
-.menu-item:hover .menu-item__img img {
-  transform: scale(1.06);
+/* A lone unpaired content page (e.g. last page of the bar list) */
+.menu-single {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  justify-content: center;
+  cursor: zoom-in;
+  transition: box-shadow var(--transition), transform var(--transition);
 }
 
-.menu-item__img.no-img::after {
+.menu-single:hover {
+  box-shadow: 0 14px 34px rgba(46,33,24,0.12);
+  transform: translateY(-3px);
+}
+
+.menu-single img {
+  max-width: 75%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+}
+
+/* Missing-file fallback (same treatment for all three card types) */
+.menu-cover.no-img,
+.menu-spread__half.no-img,
+.menu-single.no-img {
+  min-height: 160px;
+}
+
+.menu-cover.no-img img,
+.menu-single.no-img img {
+  display: none;
+}
+
+.menu-spread__half.no-img img {
+  display: none;
+}
+
+.menu-cover.no-img::after,
+.menu-spread__half.no-img::after,
+.menu-single.no-img::after {
   content: 'Фото скоро';
   position: absolute;
   inset: 0;
@@ -134,35 +207,21 @@
   letter-spacing: 0.08em;
 }
 
-.menu-item__info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 18px;
-  gap: 8px;
-}
-
-.menu-item__name {
-  font-size: 13px;
-  color: var(--text);
-  letter-spacing: 0.03em;
-}
-
-.menu-item__price {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--accent);
-  white-space: nowrap;
+.menu-cover.no-img::after,
+.menu-single.no-img::after {
+  position: static;
+  width: 100%;
+  padding: 40px 0;
 }
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .menus-wrap { padding: 48px 20px 72px; }
-  .menus-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
 }
 
 @media (max-width: 540px) {
-  .menus-grid { grid-template-columns: 1fr; }
   .menus-tab { padding: 9px 16px; font-size: 11px; }
+  .menu-spreads { gap: 16px; }
+  .menu-cover, .menu-single { padding: 16px; }
+  .menu-cover img, .menu-single img { max-width: 78%; }
 }

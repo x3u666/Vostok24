@@ -29,14 +29,36 @@ tabs.forEach(tab => {
   });
 });
 
-/* ── Lightbox ── */
+/* ── Lightbox with book-style prev/next navigation ── */
 const lightbox         = document.getElementById('lightbox');
 const lightboxImg      = document.getElementById('lightboxImg');
 const lightboxClose    = document.getElementById('lightboxClose');
 const lightboxBackdrop = document.getElementById('lightboxBackdrop');
+const lightboxPrev     = document.getElementById('lightboxPrev');
+const lightboxNext     = document.getElementById('lightboxNext');
 
-function openLightbox(src) {
-  lightboxImg.src = src;
+let navImages = [];
+let navIndex  = 0;
+
+function updateNavButtons() {
+  lightboxPrev.hidden = navImages.length < 2;
+  lightboxNext.hidden = navImages.length < 2;
+}
+
+function showAt(index) {
+  if (!navImages.length) return;
+  navIndex = (index + navImages.length) % navImages.length;
+  lightboxImg.src = navImages[navIndex].src;
+}
+
+function openLightbox(sectionEl, clickedImg) {
+  navImages = Array.from(
+    sectionEl.querySelectorAll('.menu-cover img, .menu-spread__half img, .menu-single img')
+  );
+  navIndex = navImages.indexOf(clickedImg);
+  if (navIndex === -1) navIndex = 0;
+  updateNavButtons();
+  showAt(navIndex);
   lightbox.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -47,13 +69,22 @@ function closeLightbox() {
   setTimeout(() => { lightboxImg.src = ''; }, 300);
 }
 
-document.querySelectorAll('.menu-item').forEach(item => {
+document.querySelectorAll('.menu-cover, .menu-spread__half, .menu-single').forEach(item => {
   item.addEventListener('click', () => {
     const img = item.querySelector('img');
-    if (img && img.src) openLightbox(img.src);
+    const section = item.closest('.menus-section');
+    if (img && img.src && section) openLightbox(section, img);
   });
 });
 
+lightboxPrev.addEventListener('click', e => { e.stopPropagation(); showAt(navIndex - 1); });
+lightboxNext.addEventListener('click', e => { e.stopPropagation(); showAt(navIndex + 1); });
 lightboxClose.addEventListener('click', closeLightbox);
 lightboxBackdrop.addEventListener('click', closeLightbox);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+document.addEventListener('keydown', e => {
+  if (!lightbox.classList.contains('open')) return;
+  if (e.key === 'Escape')     closeLightbox();
+  if (e.key === 'ArrowRight') showAt(navIndex + 1);
+  if (e.key === 'ArrowLeft')  showAt(navIndex - 1);
+});
