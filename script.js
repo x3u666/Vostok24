@@ -45,7 +45,10 @@ updateHeroScroll();
 /* ── Стрелка на герое ── */
 if (heroArrow) {
   heroArrow.addEventListener('click', () => {
-    aboutSection.scrollIntoView({ behavior: 'smooth' });
+    const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 66;
+    const title = aboutSection.querySelector('.section__title') || aboutSection;
+    const top = title.getBoundingClientRect().top + window.scrollY - navH - 20;
+    window.scrollTo({ top, behavior: 'smooth' });
   });
 }
 
@@ -69,19 +72,35 @@ if (backToTop) {
 const sectionIds = ['about','menu','bar','breakfast','gallery','contacts'];
 const navLinks   = document.querySelectorAll('.navbar__links a[data-section]');
 
-const sectionObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navLinks.forEach(a => a.classList.toggle('active', a.dataset.section === id));
+function updateActiveNav() {
+  const triggerLine = window.innerHeight * 0.33; /* контрольная точка — 1/3 от верха экрана */
+  let currentId = sectionIds[0];
+  let bestDelta = Infinity;
+
+  sectionIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    /* ищем секцию, чей верх прошёл контрольную точку и ближе всего к ней */
+    const delta = triggerLine - top;
+    if (delta >= -10 && delta < bestDelta) {
+      bestDelta = delta;
+      currentId = id;
     }
   });
-}, { threshold: 0.25, rootMargin: '-10% 0px -60% 0px' });
 
-sectionIds.forEach(id => {
-  const el = document.getElementById(id);
-  if (el) sectionObserver.observe(el);
-});
+  /* если прокрутили в самый верх — снимаем подсветку */
+  if (window.scrollY < document.getElementById('about').offsetTop - 200) {
+    navLinks.forEach(a => a.classList.remove('active'));
+    return;
+  }
+
+  navLinks.forEach(a => a.classList.toggle('active', a.dataset.section === currentId));
+}
+
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+window.addEventListener('load', updateActiveNav);
+updateActiveNav();
 
 /* ── Плавный скролл по ссылкам навбара ── */
 navLinks.forEach(link => {
@@ -90,7 +109,12 @@ navLinks.forEach(link => {
     if (href && href.startsWith('#')) {
       e.preventDefault();
       const target = document.querySelector(href);
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      if (!target) return;
+      /* скроллим к заголовку секции — так padding секции не влияет на позицию */
+      const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 66;
+      const title = target.querySelector('.section__title, .footer__title') || target;
+      const top = title.getBoundingClientRect().top + window.scrollY - navH - 20;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
   });
 });
@@ -238,8 +262,39 @@ if (menuHide) {
   });
 }
 
-/* ── БАР и ЗАВТРАКИ ── */
-setupToggle('barRow2',   'barBtn',   'barRow1');
+/* ── БАР: Ещё / Скрыть (3 ряда) ── */
+const barRow2 = document.getElementById('barRow2');
+const barRow3 = document.getElementById('barRow3');
+const barMore = document.getElementById('barMore');
+const barHide = document.getElementById('barHide');
+let barStage  = 0;
+
+if (barMore) {
+  barMore.addEventListener('click', () => {
+    if (barStage === 0) {
+      showRow(barRow2);
+      barStage = 1;
+      barHide.style.display = 'inline-flex';
+    } else if (barStage === 1) {
+      showRow(barRow3);
+      barStage = 2;
+      barMore.style.display = 'none';
+    }
+  });
+}
+
+if (barHide) {
+  barHide.addEventListener('click', () => {
+    hideRow(barRow2);
+    hideRow(barRow3);
+    barStage = 0;
+    barMore.style.display = 'inline-flex';
+    barHide.style.display = 'none';
+    setTimeout(() => scrollToCenter(document.getElementById('barRow1')), 600);
+  });
+}
+
+/* ── ЗАВТРАКИ ── */
 setupToggle('breakRow2', 'breakBtn', 'breakRow1');
 
 function setupToggle(rowId, btnId, firstRowId) {
