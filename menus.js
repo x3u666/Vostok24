@@ -31,6 +31,7 @@ tabs.forEach(tab => {
 
 /* ── Lightbox with book-style prev/next navigation ── */
 const lightbox         = document.getElementById('lightbox');
+const lightboxViewport = document.getElementById('lightboxViewport');
 const lightboxImg      = document.getElementById('lightboxImg');
 const lightboxClose    = document.getElementById('lightboxClose');
 const lightboxBackdrop = document.getElementById('lightboxBackdrop');
@@ -45,10 +46,17 @@ function updateNavButtons() {
   lightboxNext.hidden = navImages.length < 2;
 }
 
+function resetZoom() {
+  lightboxViewport.classList.remove('zoomed');
+  lightboxViewport.scrollLeft = 0;
+  lightboxViewport.scrollTop = 0;
+}
+
 function showAt(index) {
   if (!navImages.length) return;
   navIndex = (index + navImages.length) % navImages.length;
   lightboxImg.src = navImages[navIndex].src;
+  resetZoom();
 }
 
 function openLightbox(sectionEl, clickedImg) {
@@ -66,8 +74,26 @@ function openLightbox(sectionEl, clickedImg) {
 function closeLightbox() {
   lightbox.classList.remove('open');
   document.body.style.overflow = '';
-  setTimeout(() => { lightboxImg.src = ''; }, 300);
+  setTimeout(() => { lightboxImg.src = ''; resetZoom(); }, 300);
 }
+
+/* Click the image: zoom in toward the click point, click again to zoom out */
+lightboxImg.addEventListener('click', e => {
+  e.stopPropagation();
+  if (!lightboxViewport.classList.contains('zoomed')) {
+    const rect = lightboxImg.getBoundingClientRect();
+    const fracX = (e.clientX - rect.left) / rect.width;
+    const fracY = (e.clientY - rect.top) / rect.height;
+    lightboxViewport.classList.add('zoomed');
+    requestAnimationFrame(() => {
+      const vpRect = lightboxViewport.getBoundingClientRect();
+      lightboxViewport.scrollLeft = fracX * lightboxImg.scrollWidth  - vpRect.width  / 2;
+      lightboxViewport.scrollTop  = fracY * lightboxImg.scrollHeight - vpRect.height / 2;
+    });
+  } else {
+    resetZoom();
+  }
+});
 
 document.querySelectorAll('.menu-cover, .menu-spread__half, .menu-single').forEach(item => {
   item.addEventListener('click', () => {
@@ -88,3 +114,14 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') showAt(navIndex + 1);
   if (e.key === 'ArrowLeft')  showAt(navIndex - 1);
 });
+
+/* ── Кнопка «Наверх» ── */
+const backToTop = document.getElementById('backToTop');
+if (backToTop) {
+  window.addEventListener('scroll', () => {
+    backToTop.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}

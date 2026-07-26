@@ -679,15 +679,35 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
-.lightbox__img {
+.lightbox__viewport {
   position: relative; z-index: 1;
-  max-width: 90vw; max-height: 90vh;
+  width: 90vw; height: 90vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  transform: scale(0.94); transition: transform 0.3s ease;
+  scrollbar-width: none;
+}
+.lightbox__viewport::-webkit-scrollbar { display: none; }
+.lightbox.open .lightbox__viewport { transform: scale(1); }
+.lightbox__viewport.zoomed {
+  overflow: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.lightbox__img {
+  max-width: 100%; max-height: 100%;
   object-fit: contain;
   border-radius: var(--radius-lg);
   box-shadow: 0 32px 80px rgba(0,0,0,0.5);
-  transform: scale(0.94); transition: transform 0.3s ease;
+  cursor: zoom-in;
+  transition: max-width 0.35s ease, max-height 0.35s ease, width 0.35s ease;
+  display: block;
 }
-.lightbox.open .lightbox__img { transform: scale(1); }
+.lightbox__viewport.zoomed .lightbox__img {
+  max-width: none; max-height: none;
+  width: 210%;
+  cursor: zoom-out;
+}
 .lightbox__close {
   position: absolute; top: 24px; right: 28px; z-index: 2;
   background: rgba(230,213,192,0.1);

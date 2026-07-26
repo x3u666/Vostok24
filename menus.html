@@ -12,6 +12,8 @@
 </head>
 <body class="menus-page">
 
+  <a id="top"></a>
+
   <!-- NAVBAR -->
   <nav class="navbar navbar--always" id="navbar">
     <a href="index.html" class="navbar__logo">ВОСТОК 24</a>
@@ -113,8 +115,15 @@
     <button class="lightbox__nav lightbox__nav--prev" id="lightboxPrev" aria-label="Предыдущая страница">‹</button>
     <button class="lightbox__nav lightbox__nav--next" id="lightboxNext" aria-label="Следующая страница">›</button>
     <div class="lightbox__backdrop" id="lightboxBackdrop"></div>
-    <img class="lightbox__img" id="lightboxImg" src="" alt="Страница меню" />
+    <div class="lightbox__viewport" id="lightboxViewport">
+      <img class="lightbox__img" id="lightboxImg" src="" alt="Страница меню" />
+    </div>
   </div>
+
+  <!-- BACK TO TOP -->
+  <button class="back-to-top" id="backToTop" aria-label="Наверх">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
 
   <script src="menus.js"></script>
 </body>
