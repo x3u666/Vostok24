@@ -364,19 +364,81 @@ if (galHide) {
 
 /* ── LIGHTBOX ── */
 const lightbox         = document.getElementById('lightbox');
+const lightboxViewport = document.getElementById('lightboxViewport');
 const lightboxImg      = document.getElementById('lightboxImg');
 const lightboxClose    = document.getElementById('lightboxClose');
 const lightboxBackdrop = document.getElementById('lightboxBackdrop');
 
+/* ── Zoom / pan state ── */
+const ZOOM_SCALE = 2.4;
+const DRAG_THRESHOLD = 4;
+
+let scale = 1;
+let panX = 0, panY = 0;
+let isPointerDown = false;
+let dragMoved = false;
+let startClientX = 0, startClientY = 0;
+let startPanX = 0, startPanY = 0;
+
+function setTransform(withTransition) {
+  lightboxImg.style.transition = withTransition
+    ? 'transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)'
+    : 'none';
+  lightboxImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+}
+
+function clampPan() {
+  const baseW = lightboxImg.offsetWidth;
+  const baseH = lightboxImg.offsetHeight;
+  const vpRect = lightboxViewport.getBoundingClientRect();
+  const maxPanX = Math.max(0, (baseW * scale - vpRect.width) / 2);
+  const maxPanY = Math.max(0, (baseH * scale - vpRect.height) / 2);
+  panX = Math.min(maxPanX, Math.max(-maxPanX, panX));
+  panY = Math.min(maxPanY, Math.max(-maxPanY, panY));
+}
+
+function resetZoom() {
+  scale = 1; panX = 0; panY = 0;
+  lightboxViewport.classList.remove('zoomed');
+  setTransform(false);
+}
+
+function zoomToPoint(clientX, clientY) {
+  const rect = lightboxImg.getBoundingClientRect(); // rect at scale === 1
+  const fracX = (clientX - rect.left) / rect.width  - 0.5;
+  const fracY = (clientY - rect.top)  / rect.height - 0.5;
+  scale = ZOOM_SCALE;
+  panX = -fracX * rect.width  * ZOOM_SCALE;
+  panY = -fracY * rect.height * ZOOM_SCALE;
+  clampPan();
+  lightboxViewport.classList.add('zoomed');
+  setTransform(true);
+}
+
+function panToPoint(clientX, clientY) {
+  if (scale === 1) return;
+  const rect = lightboxViewport.getBoundingClientRect();
+  const baseW = lightboxImg.offsetWidth;
+  const baseH = lightboxImg.offsetHeight;
+  const maxPanX = Math.max(0, (baseW * scale - rect.width) / 2);
+  const maxPanY = Math.max(0, (baseH * scale - rect.height) / 2);
+  const fracX = (clientX - rect.left) / rect.width - 0.5;
+  const fracY = (clientY - rect.top)  / rect.height - 0.5;
+  panX = -fracX * 2 * maxPanX;
+  panY = -fracY * 2 * maxPanY;
+  setTransform(false);
+}
+
 function openLightbox(src) {
   lightboxImg.src = src;
+  resetZoom();
   lightbox.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 function closeLightbox() {
   lightbox.classList.remove('open');
   document.body.style.overflow = '';
-  setTimeout(() => { lightboxImg.src = ''; }, 300);
+  setTimeout(() => { lightboxImg.src = ''; resetZoom(); }, 300);
 }
 
 document.querySelectorAll('.food-card').forEach(card => {
@@ -384,6 +446,52 @@ document.querySelectorAll('.food-card').forEach(card => {
 });
 document.querySelectorAll('.gallery-item').forEach(item => {
   item.addEventListener('click', () => { if (item.dataset.zoom) openLightbox(item.dataset.zoom); });
+});
+
+lightboxViewport.addEventListener('mousemove', e => {
+  if (scale !== 1) panToPoint(e.clientX, e.clientY);
+});
+
+lightboxImg.addEventListener('click', e => {
+  e.stopPropagation();
+  if (scale === 1) {
+    zoomToPoint(e.clientX, e.clientY);
+  } else {
+    resetZoom();
+  }
+});
+
+lightboxImg.addEventListener('touchstart', e => {
+  if (e.touches.length !== 1) return;
+  const t = e.touches[0];
+  isPointerDown = scale !== 1;
+  dragMoved = false;
+  startClientX = t.clientX; startClientY = t.clientY;
+  startPanX = panX; startPanY = panY;
+}, { passive: true });
+
+lightboxImg.addEventListener('touchmove', e => {
+  if (!isPointerDown || e.touches.length !== 1) return;
+  const t = e.touches[0];
+  const dx = t.clientX - startClientX;
+  const dy = t.clientY - startClientY;
+  if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) dragMoved = true;
+  panX = startPanX + dx;
+  panY = startPanY + dy;
+  clampPan();
+  setTransform(false);
+}, { passive: true });
+
+lightboxImg.addEventListener('touchend', () => {
+  isPointerDown = false;
+  if (!dragMoved) {
+    if (scale === 1) {
+      zoomToPoint(startClientX, startClientY);
+    } else {
+      resetZoom();
+    }
+  }
+  dragMoved = false;
 });
 
 lightboxClose.addEventListener('click', closeLightbox);
